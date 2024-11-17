@@ -78,12 +78,12 @@ WSGI_APPLICATION = "phase_comparison_protection.wsgi.application"
 
 DATABASES = {
     "default": {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_phase_comparison_protection',
-        'USER': 'postgres',
-        'PASSWORD': '4815162342',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "db_phase_comparison_protection",
+        "USER": "postgres",
+        "PASSWORD": "4815162342",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
     }
 }
 

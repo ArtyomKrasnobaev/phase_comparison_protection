@@ -4,10 +4,15 @@ from core.models import *
 
 
 class Command(BaseCommand):
-    help = "Заполнение базы данных тестовыми данными"
+    """
+    Команда для автоматического заполнения БД тестовыми данными.
+
+    Запуск:
+        python manage.py seed_db
+    """
 
     def handle(self, *args, **options):
-        """Метод заполнения базы данных тестовыми данными"""
+        """Метод заполнения БД тестовыми данными."""
 
         # Очистка БД перед заполнением
         Line.objects.all().delete()
@@ -32,8 +37,7 @@ class Command(BaseCommand):
 
         # Заполнение модели ProtectionDevice
         protection_device = ProtectionDevice.objects.create(
-            device_model='ШЭ2710 582',
-            manufacturer='НПП ЭКРА'
+            device_model="ШЭ2710 582", manufacturer="НПП ЭКРА"
         )
         protection_device.components.set(components)
 
@@ -41,17 +45,17 @@ class Command(BaseCommand):
         Line.objects.bulk_create(
             [
                 Line(
-                    dispatch_name='ВЛ 500 кВ Ново-Анжерская - Томская',
+                    dispatch_name="ВЛ 500 кВ Ново-Анжерская - Томская",
                     current_capacity=2000,
                     protection_device=protection_device,
                 ),
                 Line(
-                    dispatch_name='ВЛ 500 кВ Итатская - Томская',
+                    dispatch_name="ВЛ 500 кВ Итатская - Томская",
                     current_capacity=2000,
                     protection_device=protection_device,
                 ),
                 Line(
-                    dispatch_name='ВЛ 500 кВ Заря - Юрга',
+                    dispatch_name="ВЛ 500 кВ Заря - Юрга",
                     current_capacity=2000,
                     protection_device=protection_device,
                 ),
