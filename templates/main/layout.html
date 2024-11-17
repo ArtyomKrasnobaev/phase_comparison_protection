@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <link rel="stylesheet" href="{% static 'main/css/yeti.css' %}"/>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock title %}</title>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarColor01">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item" style="margin-right: 15px;">
+                    <a class="nav-link" href="{% url 'home' %}" style="font-size: 20px;">PF.ДФЗ</a>
+                </li>
+                <li class="nav-item" style="margin-right: 15px;">
+                    <a class="nav-link" href="/calculation" style="font-size: 20px;">РАСЧЕТ</a>
+                </li>
+                <li class="nav-item" style="margin-right: 15px;">
+                    <a class="nav-link" href="/sensitivity" style="font-size: 20px;">ЧУВСТВИТЕЛЬНОСТЬ</a>
+                </li>
+                <li class="nav-item" style="margin-right: 15px;">
+                    <a class="nav-link" href="/settings" style="font-size: 20px;">ПАРАМЕТРЫ НАСТРОЙКИ</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<h1>{% block header %}{% endblock header %}</h1>
+<div>{% block content%}{% endblock content %}</div>
+</body>
+</html>
