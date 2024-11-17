@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "main.apps.MainConfig",
     "core.apps.CoreConfig",
-    "calculation.apps.CalculationConfig"
+    "calculation.apps.CalculationConfig",
 ]
 
 MIDDLEWARE = [
@@ -57,8 +57,7 @@ ROOT_URLCONF = "phase_comparison_protection.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates']
-        ,
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
