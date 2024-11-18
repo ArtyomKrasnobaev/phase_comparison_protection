@@ -14,12 +14,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """Метод заполнения БД тестовыми данными."""
 
-        # Очистка БД перед заполнением
         Line.objects.all().delete()
         ProtectionDevice.objects.all().delete()
         Component.objects.all().delete()
 
-        # Заполнение модели Component
         components = Component.objects.bulk_create(
             [
                 Component(setting_designation="IЛ БЛОК"),
@@ -35,13 +33,11 @@ class Command(BaseCommand):
             ]
         )
 
-        # Заполнение модели ProtectionDevice
         protection_device = ProtectionDevice.objects.create(
             device_model="ШЭ2710 582", manufacturer="НПП ЭКРА"
         )
         protection_device.components.set(components)
 
-        # Заполнение модели Line
         Line.objects.bulk_create(
             [
                 Line(
