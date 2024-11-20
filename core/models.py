@@ -7,6 +7,7 @@ class Component(models.Model):
     setting_designation = models.CharField(
         verbose_name="Обозначение параметра настройки", max_length=100, unique=True
     )
+    test = models.CharField(max_length=100, unique=True)
 
     class Meta:
         """Мета-данные модели Component."""
