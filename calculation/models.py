@@ -21,6 +21,6 @@ class CalculationProtocol(models.Model):
     def __str__(self):
         """Возвращает ЛЭП, орган, величину уставки и метку времени."""
 
-        formatted_time = self.timestamp.strftime('%d.%m.%Y %H:%M:%S')
+        formatted_time = self.timestamp.strftime("%d.%m.%Y %H:%M:%S")
         protocol = f"{self.line}, {self.component}, {self.condition}, {self.result_value:.2f}, {formatted_time}"
         return protocol
