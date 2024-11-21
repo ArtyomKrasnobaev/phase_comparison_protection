@@ -1,5 +1,6 @@
 from django.core.management import BaseCommand
 
+from calculation.models import *
 from core.models import *
 
 
@@ -17,6 +18,7 @@ class Command(BaseCommand):
         Line.objects.all().delete()
         ProtectionDevice.objects.all().delete()
         Component.objects.all().delete()
+        CalculationProtocol.objects.all().delete()
 
         components = Component.objects.bulk_create(
             [
@@ -24,8 +26,6 @@ class Command(BaseCommand):
                 Component(setting_designation="IЛ ОТКЛ"),
                 Component(setting_designation="I2 БЛОК"),
                 Component(setting_designation="I2 ОТКЛ"),
-                Component(setting_designation="DI1 БЛОК"),
-                Component(setting_designation="DI1 ОТКЛ"),
                 Component(setting_designation="DI2 БЛОК"),
                 Component(setting_designation="DI2 ОТКЛ"),
                 Component(setting_designation="U2 БЛОК"),
