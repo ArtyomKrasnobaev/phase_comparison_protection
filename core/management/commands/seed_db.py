@@ -1,6 +1,5 @@
 from django.core.management import BaseCommand
 
-from calculation.models import *
 from core.models import *
 
 
@@ -20,19 +19,15 @@ class Command(BaseCommand):
         Component.objects.all().delete()
         ProtectionDevice.objects.all().delete()
         ProtectionHalfSet.objects.all().delete()
-        CalculationProtocol.objects.all().delete()
-        CalculationMeta.objects.all().delete()
 
         # Заполнение таблицы ЛЭП
-        line = Line.objects.create(
-            dispatch_name="ВЛ 500 кВ Ново-Анжерская - Томская"
-        )
+        line = Line.objects.create(dispatch_name="ВЛ 500 кВ Ново-Анжерская - Томская")
 
         # Заполнение таблицы подстанций
         substations = Substation.objects.bulk_create(
             [
-                Substation(dispatch_name='ПС 500 кВ Ново-Анжерская'),
-                Substation(dispatch_name='ПС 500 кВ Томская'),
+                Substation(dispatch_name="ПС 500 кВ Ново-Анжерская"),
+                Substation(dispatch_name="ПС 500 кВ Томская"),
             ]
         )
 
@@ -62,13 +57,13 @@ class Command(BaseCommand):
                 ProtectionHalfSet(
                     line=line,
                     substation=substations[0],
-                    protection_device=protection_device
+                    protection_device=protection_device,
                 ),
                 ProtectionHalfSet(
                     line=line,
                     substation=substations[1],
-                    protection_device=protection_device
-                )
+                    protection_device=protection_device,
+                ),
             ]
         )
 

@@ -1,14 +1,15 @@
 from math import sqrt
 from typing import Callable
 
-from calculation.models import CalculationProtocol
-from core.models import Component, Line
+from calculation.models import CalculationMeta, CalculationProtocol
+from core.models import Component, Line, ProtectionHalfSet
 
 
 class CalculationService:
 
     def __init__(
         self,
+        calculation_meta: CalculationMeta,
         line: Line,
         il_grading_factor=1.3,
         il_reset_factor=0.9,
@@ -24,7 +25,7 @@ class CalculationService:
         u2_matching_factor=2.0,
     ) -> None:
 
-        self.line = line
+        # Определяем коэффициенты для всех органов
         self.il_grading_factor = il_grading_factor
         self.il_reset_factor = il_reset_factor
         self.il_matching_factor = il_matching_factor
@@ -37,8 +38,15 @@ class CalculationService:
         self.u2_matching_factor = u2_matching_factor
         self.u2_imbalance_voltage = u2_imbalance_voltage
         self.voltage_transformer_factor = voltage_transformer_factor
-        self.components = line.protection_device.components.all()
 
+        # Определяем мета-данные расчета
+        self.calculation_meta = calculation_meta
+
+        # Определяем линию и полукомплекты защиты
+        self.line = line
+        self.protection_half_sets = line.protection_half_sets.all()
+
+        # Карта расчетных функций органов
         self.CALCULATION_MAP = {
             "IЛ БЛОК": self.calculate_il_block,
             "IЛ ОТКЛ": self.calculate_il_break,
@@ -50,9 +58,17 @@ class CalculationService:
             "U2 ОТКЛ": self.calculate_u2_break,
         }
 
-    def save_result_to_db(self, component: Component, result_value: float) -> None:
+    def save_result_to_db(
+            self,
+            protection_half_set: ProtectionHalfSet,
+            component: Component,
+            result_value: float
+    ) -> None:
         CalculationProtocol.objects.create(
-            line=self.line, component=component, result_value=result_value
+            calculation_meta=self.calculation_meta,
+            protection_half_set=protection_half_set,
+            component=component,
+            result_value=result_value,
         )
 
     def get_calculation_function(self, component: Component) -> Callable[[], float]:
@@ -97,10 +113,13 @@ class CalculationService:
         return u2_break_value
 
     def run(self) -> None:
-        for component in self.components:
-            calculation_function = self.get_calculation_function(component)
-            if calculation_function:
-                result = round(calculation_function(), 0)
-                self.save_result_to_db(component, result)
-            else:
-                print(f"Отсутствует расчетный модуль органа {component}")
+        for protection_half_set in self.protection_half_sets:
+            components = protection_half_set.protection_device.components.all()
+            for component in components:
+                calculation_function = self.get_calculation_function(component)
+                if calculation_function:
+                    print(f'Расчет для органа {component} полукомплекта {protection_half_set}')
+                    result = round(calculation_function(), 0)
+                    self.save_result_to_db(protection_half_set, component, result)
+                else:
+                    print(f"Отсутствует расчетный модуль для органа {component}")

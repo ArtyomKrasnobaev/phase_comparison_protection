@@ -51,7 +51,9 @@ class Substation(models.Model):
 class Component(models.Model):
     """Модель органа защиты для реализации функции ДФЗ."""
 
-    description = models.TextField(verbose_name="Описание работы органа", unique=True, blank=True, null=True)
+    description = models.TextField(
+        verbose_name="Описание работы органа", blank=True, null=True
+    )
     setting_designation = models.CharField(
         verbose_name="Обозначение параметра настройки", max_length=100, unique=True
     )
@@ -96,9 +98,21 @@ class ProtectionDevice(models.Model):
 class ProtectionHalfSet(models.Model):
     """Модель полукомплекта ДФЗ."""
 
-    line = models.ForeignKey(Line, on_delete=models.CASCADE)
-    substation = models.ForeignKey(Substation, on_delete=models.CASCADE)
-    protection_device = models.ForeignKey(ProtectionDevice, on_delete=models.CASCADE)
+    line = models.ForeignKey(
+        Line,
+        on_delete=models.CASCADE,
+        related_name="protection_half_sets"
+    )
+    substation = models.ForeignKey(
+        Substation,
+        on_delete=models.CASCADE,
+        related_name="protection_half_sets"
+    )
+    protection_device = models.ForeignKey(
+        ProtectionDevice,
+        on_delete=models.CASCADE,
+        related_name="protection_half_sets"
+    )
 
     class Meta:
         """Мета-данные модели ProtectionHalfSet."""

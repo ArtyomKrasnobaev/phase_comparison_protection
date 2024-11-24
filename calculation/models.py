@@ -7,11 +7,9 @@ class CalculationMeta(models.Model):
     """Модель мета-данных расчета."""
 
     calculation_number = models.PositiveIntegerField(
-        verbose_name="Номер расчета", unique=True, null=True, blank=True
+        verbose_name="Номер расчета", null=True, blank=True
     )
-    timestamp = models.DateTimeField(
-        verbose_name="Дата расчета", auto_now_add=True
-    )
+    timestamp = models.DateTimeField(verbose_name="Дата расчета", auto_now_add=True)
 
     class Meta:
         """Мета-данные модели CalculationMeta."""
@@ -24,7 +22,7 @@ class CalculationMeta(models.Model):
         :return: Номер расчета.
         """
 
-        return self.calculation_number
+        return str(self.calculation_number)
 
 
 class CalculationProtocol(models.Model):
@@ -38,9 +36,6 @@ class CalculationProtocol(models.Model):
     )
     component = models.ForeignKey(
         Component, on_delete=models.CASCADE, related_name="protocols"
-    )
-    factors = models.JSONField(
-        verbose_name="Расчетные коэффициенты", null=True, blank=True
     )
     result_value = models.FloatField(verbose_name="Результат расчета")
 
