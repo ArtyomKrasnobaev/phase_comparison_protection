@@ -1,5 +1,5 @@
 from math import sqrt
-from typing import Callable, Dict
+from typing import Callable
 
 from calculation.models import CalculationProtocol
 from core.models import Component, Line
@@ -38,7 +38,7 @@ class CalculationService:
         self.u2_imbalance_voltage = u2_imbalance_voltage
         self.voltage_transformer_factor = voltage_transformer_factor
         self.components = line.protection_device.components.all()
-        self.CALCULATION_MAP: Dict[str, Callable[[], float]] = {
+        self.CALCULATION_MAP = {
             "IЛ БЛОК": self.calculate_il_block,
             "IЛ ОТКЛ": self.calculate_il_break,
             "I2 БЛОК": self.calculate_i2_block,
@@ -95,7 +95,7 @@ class CalculationService:
         u2_break_value = self.u2_matching_factor * self.calculate_u2_block()
         return u2_break_value
 
-    def run(self):
+    def run(self) -> None:
         for component in self.components:
             calculation_function = self.get_calculation_function(component)
             if calculation_function:
