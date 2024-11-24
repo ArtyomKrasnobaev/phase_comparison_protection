@@ -51,7 +51,7 @@ class Substation(models.Model):
 class Component(models.Model):
     """Модель органа защиты для реализации функции ДФЗ."""
 
-    description = models.TextField(verbose_name="Описание работы органа", unique=True)
+    description = models.TextField(verbose_name="Описание работы органа", unique=True, blank=True, null=True)
     setting_designation = models.CharField(
         verbose_name="Обозначение параметра настройки", max_length=100, unique=True
     )

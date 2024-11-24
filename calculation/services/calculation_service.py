@@ -38,6 +38,7 @@ class CalculationService:
         self.u2_imbalance_voltage = u2_imbalance_voltage
         self.voltage_transformer_factor = voltage_transformer_factor
         self.components = line.protection_device.components.all()
+
         self.CALCULATION_MAP = {
             "IЛ БЛОК": self.calculate_il_block,
             "IЛ ОТКЛ": self.calculate_il_break,
