@@ -99,19 +99,13 @@ class ProtectionHalfSet(models.Model):
     """Модель полукомплекта ДФЗ."""
 
     line = models.ForeignKey(
-        Line,
-        on_delete=models.CASCADE,
-        related_name="protection_half_sets"
+        Line, on_delete=models.CASCADE, related_name="protection_half_sets"
     )
     substation = models.ForeignKey(
-        Substation,
-        on_delete=models.CASCADE,
-        related_name="protection_half_sets"
+        Substation, on_delete=models.CASCADE, related_name="protection_half_sets"
     )
     protection_device = models.ForeignKey(
-        ProtectionDevice,
-        on_delete=models.CASCADE,
-        related_name="protection_half_sets"
+        ProtectionDevice, on_delete=models.CASCADE, related_name="protection_half_sets"
     )
 
     class Meta:

@@ -59,10 +59,10 @@ class CalculationService:
         }
 
     def save_result_to_db(
-            self,
-            protection_half_set: ProtectionHalfSet,
-            component: Component,
-            result_value: float
+        self,
+        protection_half_set: ProtectionHalfSet,
+        component: Component,
+        result_value: float,
     ) -> None:
         CalculationProtocol.objects.create(
             calculation_meta=self.calculation_meta,
@@ -118,7 +118,9 @@ class CalculationService:
             for component in components:
                 calculation_function = self.get_calculation_function(component)
                 if calculation_function:
-                    print(f'Расчет для органа {component} полукомплекта {protection_half_set}')
+                    print(
+                        f"Расчет для органа {component} полукомплекта {protection_half_set}"
+                    )
                     result = round(calculation_function(), 0)
                     self.save_result_to_db(protection_half_set, component, result)
                 else:
