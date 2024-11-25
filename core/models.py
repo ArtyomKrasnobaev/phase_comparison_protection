@@ -12,6 +12,12 @@ class Line(models.Model):
         verbose_name="Диспетчерское наименование", max_length=100, unique=True
     )
     current_capacity = models.FloatField(verbose_name="ДДТН", default=2000)
+    pf_name = models.CharField(
+        verbose_name="Наименование в PowerFactory",
+        max_length=100,
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         """Мета-данные модели Line."""
@@ -32,6 +38,12 @@ class Substation(models.Model):
 
     dispatch_name = models.CharField(
         verbose_name="Диспетчерское наименование", max_length=100, unique=True
+    )
+    pf_name = models.CharField(
+        verbose_name="Наименование в PowerFactory",
+        max_length=100,
+        blank=True,
+        null=True,
     )
 
     class Meta:
