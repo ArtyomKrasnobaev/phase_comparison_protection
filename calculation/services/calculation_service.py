@@ -1,7 +1,7 @@
 from math import sqrt
 from typing import Callable
 
-from calculation.models import CalculationMeta, CalculationProtocol
+from calculation.models import CalculationMeta, SettingsCalculationProtocol
 from core.models import Component, Line, ProtectionHalfSet
 
 
@@ -64,7 +64,7 @@ class CalculationService:
         component: Component,
         result_value: float,
     ) -> None:
-        CalculationProtocol.objects.create(
+        SettingsCalculationProtocol.objects.create(
             calculation_meta=self.calculation_meta,
             protection_half_set=protection_half_set,
             component=component,

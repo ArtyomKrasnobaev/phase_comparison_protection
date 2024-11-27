@@ -132,5 +132,5 @@ class ProtectionHalfSet(models.Model):
         :return: Диспетчерское наименование полукомплекта ДФЗ.
         """
 
-        dispatch_name = f"ДФЗ {self.line} {self.substation}"
+        dispatch_name = f"ДФЗ {self.line} ({self.substation})"
         return dispatch_name

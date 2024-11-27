@@ -19,16 +19,9 @@ class CalculationMeta(models.Model):
         verbose_name = "Мета-данные расчета"
         verbose_name_plural = "Мета-данные расчетов"
 
-    def __str__(self):
-        """
-        :return: Номер расчета.
-        """
 
-        return str(self.calculation_number)
-
-
-class CalculationProtocol(models.Model):
-    """Модель протокола расчета."""
+class SettingsCalculationProtocol(models.Model):
+    """Модель протокола расчета параметра настройки органа."""
 
     calculation_meta = models.ForeignKey(
         CalculationMeta, on_delete=models.CASCADE, related_name="protocols"
@@ -48,19 +41,21 @@ class CalculationProtocol(models.Model):
         verbose_name_plural = "Протоколы расчетов"
 
 
-class FaultCalculation(models.Model):
-    """Модель данных расчета токов КЗ."""
+class FaultCalculationProtocol(models.Model):
+    """Модель протокола расчета токов КЗ."""
 
-    calculation_meta = models.ForeignKey(
-        CalculationMeta, on_delete=models.CASCADE, related_name="faults"
-    )
     protection_half_set = models.ForeignKey(
         ProtectionHalfSet, on_delete=models.CASCADE, related_name="faults"
     )
     fault_type = models.CharField(verbose_name="Вид КЗ", max_length=255)
     fault_location = models.CharField(verbose_name="Узел КЗ", max_length=255)
     network_topology = models.CharField(verbose_name="Схема сети", max_length=255)
-    fault_currents = models.JSONField(verbose_name="Токи симметричных составляющих")
+    positive_sequence_current = models.FloatField(
+        verbose_name="Ток прямой последовательности"
+    )
+    negative_sequence_current = models.FloatField(
+        verbose_name="Ток обратной последовательности"
+    )
 
     class Meta:
         """Мета-данные модели FaultCalculation."""
@@ -69,15 +64,33 @@ class FaultCalculation(models.Model):
         verbose_name_plural = "Протоколы расчетов КЗ"
 
 
+class SensitivityAnalysisProtocol(models.Model):
+    """Модель анализа чувствительности."""
+
+    settings_calculation_protocol = models.ForeignKey(
+        SettingsCalculationProtocol, on_delete=models.CASCADE
+    )
+    fault_calculation_protocol = models.ForeignKey(
+        FaultCalculationProtocol, on_delete=models.CASCADE
+    )
+    sensitivity_rate = models.FloatField(verbose_name="Коэффициент чувствительности")
+
+    class Meta:
+        """Мета-данные модели SensitivityAnalysis."""
+
+        verbose_name = "Анализ чувствительности"
+        verbose_name_plural = "Анализ чувствительности"
+
+
 @receiver(pre_save, sender=CalculationMeta)
 def generate_calculation_number(sender, instance, **kwargs):
-    """Автогенерация номера расчета перед сохранением."""
-    if not instance.calculation_number:  # Если номер расчета еще не задан
-        # Получаем максимальный номер расчета и увеличиваем на 1
+    """Генерация номера расчета перед сохранением."""
+
+    if not instance.calculation_number:
         last_calculation = (
             CalculationMeta.objects.all().order_by("calculation_number").last()
         )
         if last_calculation:
             instance.calculation_number = last_calculation.calculation_number + 1
         else:
-            instance.calculation_number = 1  # Если записей нет, начинаем с 1
+            instance.calculation_number = 1
