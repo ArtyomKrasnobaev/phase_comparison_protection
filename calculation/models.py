@@ -40,6 +40,11 @@ class SettingsCalculationProtocol(models.Model):
         verbose_name = "Протокол расчета"
         verbose_name_plural = "Протоколы расчетов"
 
+    def __str__(self):
+
+        meta = f'{self.component} {self.protection_half_set}'
+        return meta
+
 
 class FaultCalculationProtocol(models.Model):
     """Модель протокола расчета токов КЗ."""
