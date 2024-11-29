@@ -11,13 +11,14 @@ class Line(models.Model):
     dispatch_name = models.CharField(
         verbose_name="Диспетчерское наименование", max_length=100, unique=True
     )
-    current_capacity = models.FloatField(verbose_name="ДДТН", default=2000)
     pf_name = models.CharField(
         verbose_name="Наименование в PowerFactory",
         max_length=100,
         blank=True,
         null=True,
     )
+    current_capacity = models.FloatField(verbose_name="ДДТН, А", default=2000)
+    length = models.FloatField(verbose_name='Длина ЛЭП, км', blank=True, null=True)
 
     class Meta:
         """Мета-данные модели Line."""
@@ -60,6 +61,28 @@ class Substation(models.Model):
         return self.dispatch_name
 
 
+class ProtectionDevice(models.Model):
+    """Модель устройства РЗА с функцией ДФЗ."""
+
+    device_model = models.CharField(
+        verbose_name="Модель устройства", max_length=100, unique=True
+    )
+    manufacturer = models.CharField(verbose_name="Производитель", max_length=100)
+
+    class Meta:
+        """Мета-данные модели ProtectionDevice."""
+
+        verbose_name = "Устройство РЗА"
+        verbose_name_plural = "Устройства РЗА"
+
+    def __str__(self):
+        """
+        :return: Модель устройства РЗА
+        """
+
+        return self.device_model
+
+
 class Component(models.Model):
     """Модель органа защиты для реализации функции ДФЗ."""
 
@@ -84,40 +107,44 @@ class Component(models.Model):
         return self.setting_designation
 
 
-class ProtectionDevice(models.Model):
-    """Модель устройства РЗА с функцией ДФЗ."""
+class DeviceEquipment(models.Model):
+    """Промежуточная модель для связи ProtectionDevice и Component."""
 
-    device_model = models.CharField(
-        verbose_name="Модель устройства", max_length=100, unique=True
+    protection_device = models.ForeignKey(
+        ProtectionDevice,
+        on_delete=models.CASCADE,
+        related_name="device_equipment"
     )
-    manufacturer = models.CharField(verbose_name="Производитель", max_length=100)
-    components = models.ManyToManyField(Component, related_name="protection_device")
+    component = models.ForeignKey(
+        Component,
+        on_delete=models.CASCADE,
+        related_name="device_equipment"
+    )
 
     class Meta:
-        """Мета-данные модели ProtectionDevice."""
+        """Мета-данные модели DeviceEquipment."""
 
-        verbose_name = "Устройство защиты"
-        verbose_name_plural = "Устройства защиты"
-
-    def __str__(self):
-        """
-        :return: Модель устройства РЗА
-        """
-
-        return self.device_model
+        verbose_name = 'Орган ДФЗ устройства РЗА'
+        verbose_name_plural = 'Органы ДФЗ устройства РЗА'
 
 
 class ProtectionHalfSet(models.Model):
     """Модель полукомплекта ДФЗ."""
 
     line = models.ForeignKey(
-        Line, on_delete=models.CASCADE, related_name="protection_half_sets"
+        Line,
+        on_delete=models.CASCADE,
+        related_name="protection_half_sets"
     )
     substation = models.ForeignKey(
-        Substation, on_delete=models.CASCADE, related_name="protection_half_sets"
+        Substation,
+        on_delete=models.CASCADE,
+        related_name="protection_half_sets"
     )
     protection_device = models.ForeignKey(
-        ProtectionDevice, on_delete=models.CASCADE, related_name="protection_half_sets"
+        ProtectionDevice,
+        on_delete=models.CASCADE,
+        related_name="protection_half_sets"
     )
 
     class Meta:

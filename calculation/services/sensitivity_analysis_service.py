@@ -12,7 +12,7 @@ class SensitivityAnalysisService:
 
         self.calculation_meta = calculation_meta
         self.settings_calculation_protocols = (
-            SettingsCalculationProtocol.objects.filter(
+            SettingsCalculation.objects.filter(
                 calculation_meta=self.calculation_meta
             )
         )
@@ -26,12 +26,12 @@ class SensitivityAnalysisService:
 
     @staticmethod
     def save_result_to_db(
-            settings_calculation_protocol: SettingsCalculationProtocol,
-            fault_calculation_protocol: FaultCalculationProtocol,
+            settings_calculation_protocol: SettingsCalculation,
+            fault_calculation_protocol: FaultCalculation,
             sensitivity_rate: float
     ) -> None:
 
-        SensitivityAnalysisProtocol.objects.create(
+        SensitivityAnalysis.objects.create(
             settings_calculation_protocol=settings_calculation_protocol,
             fault_calculation_protocol=fault_calculation_protocol,
             sensitivity_rate=sensitivity_rate
@@ -43,7 +43,7 @@ class SensitivityAnalysisService:
 
     @staticmethod
     def calculate_sensitivity(
-            fault_protocol: FaultCalculationProtocol,
+            fault_protocol: FaultCalculation,
             component: Component,
             result_value: float
     ) -> float:
@@ -68,7 +68,7 @@ class SensitivityAnalysisService:
                 print(f"\tОрган: {component.setting_designation}, Виды КЗ: {fault_types}")
 
                 for fault_type in fault_types:
-                    fault_protocols = FaultCalculationProtocol.objects.filter(
+                    fault_protocols = FaultCalculation.objects.filter(
                         fault_type=fault_type,
                         protection_half_set=setting_calculation_protocol.protection_half_set
                     )

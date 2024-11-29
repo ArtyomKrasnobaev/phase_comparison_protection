@@ -2,16 +2,50 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from core.models import Component, ProtectionHalfSet
+from core.models import Component, ProtectionHalfSet, Line
+
+
+class Fault(models.Model):
+    """Модель видов КЗ."""
+
+    fault_type = models.CharField(verbose_name='Вид КЗ', max_length=255, unique=True)
+    fault_type_designation = models.CharField(verbose_name='Обозначение', max_length=255, unique=True)
+
+    class Meta:
+        """Мета-данные модели FaultType."""
+
+        verbose_name = 'Вид КЗ'
+        verbose_name_plural = 'Виды КЗ'
+
+    def __str__(self):
+        """
+        :return: Обозначение вида КЗ.
+        """
+
+        return self.fault_type_designation
+
+
+class FaultProtection(models.Model):
+    """Промежуточная модель для связи FaultType и Component."""
+
+    component = models.ForeignKey(Component, on_delete=models.CASCADE)
+    fault = models.ForeignKey(Fault, on_delete=models.CASCADE)
+
+    class Meta:
+        """Мета-данные модели FaultProtection."""
+
+        verbose_name = 'Назначение органов ДФЗ'
+        verbose_name_plural = 'Назначение органов ДФЗ'
 
 
 class CalculationMeta(models.Model):
     """Модель мета-данных расчета."""
 
+    line = models.ForeignKey(Line, on_delete=models.CASCADE, related_name='calculations', null=True, blank=True)
     calculation_number = models.PositiveIntegerField(
         verbose_name="Номер расчета", null=True, blank=True
     )
-    timestamp = models.DateTimeField(verbose_name="Дата расчета", auto_now_add=True)
+    calculation_date = models.DateTimeField(verbose_name="Дата расчета", auto_now_add=True)
 
     class Meta:
         """Мета-данные модели CalculationMeta."""
@@ -19,18 +53,25 @@ class CalculationMeta(models.Model):
         verbose_name = "Мета-данные расчета"
         verbose_name_plural = "Мета-данные расчетов"
 
+    def __str__(self):
+        """
+        :return: Номер расчета.
+        """
 
-class SettingsCalculationProtocol(models.Model):
+        return f'Расчет параметров настройки ДФЗ {self.line} от {self.calculation_date}'
+
+
+class SettingsCalculation(models.Model):
     """Модель протокола расчета параметра настройки органа."""
 
     calculation_meta = models.ForeignKey(
-        CalculationMeta, on_delete=models.CASCADE, related_name="protocols"
+        CalculationMeta, on_delete=models.CASCADE, related_name='settings_calculations'
     )
     protection_half_set = models.ForeignKey(
-        ProtectionHalfSet, on_delete=models.CASCADE, related_name="protocols"
+        ProtectionHalfSet, on_delete=models.CASCADE, related_name='settings_calculations'
     )
     component = models.ForeignKey(
-        Component, on_delete=models.CASCADE, related_name="protocols"
+        Component, on_delete=models.CASCADE, related_name='settings_calculations'
     )
     result_value = models.FloatField(verbose_name="Результат расчета")
 
@@ -40,43 +81,33 @@ class SettingsCalculationProtocol(models.Model):
         verbose_name = "Протокол расчета"
         verbose_name_plural = "Протоколы расчетов"
 
-    def __str__(self):
 
-        meta = f'{self.component} {self.protection_half_set}'
-        return meta
-
-
-class FaultCalculationProtocol(models.Model):
+class FaultCalculation(models.Model):
     """Модель протокола расчета токов КЗ."""
 
     protection_half_set = models.ForeignKey(
-        ProtectionHalfSet, on_delete=models.CASCADE, related_name="faults"
+        ProtectionHalfSet, on_delete=models.CASCADE, related_name="fault_calculations"
     )
-    fault_type = models.CharField(verbose_name="Вид КЗ", max_length=255)
+    fault_type = models.ForeignKey(Fault, on_delete=models.CASCADE, related_name='fault_calculations')
     fault_location = models.CharField(verbose_name="Узел КЗ", max_length=255)
     network_topology = models.CharField(verbose_name="Схема сети", max_length=255)
-    positive_sequence_current = models.FloatField(
-        verbose_name="Ток прямой последовательности"
-    )
-    negative_sequence_current = models.FloatField(
-        verbose_name="Ток обратной последовательности"
-    )
+    fault_values = models.JSONField()
 
     class Meta:
         """Мета-данные модели FaultCalculation."""
 
-        verbose_name = "Протокол расчета КЗ"
-        verbose_name_plural = "Протоколы расчетов КЗ"
+        verbose_name = "Расчет токов КЗ"
+        verbose_name_plural = "Протоколы расчетов токов КЗ"
 
 
-class SensitivityAnalysisProtocol(models.Model):
+class SensitivityAnalysis(models.Model):
     """Модель анализа чувствительности."""
 
-    settings_calculation_protocol = models.ForeignKey(
-        SettingsCalculationProtocol, on_delete=models.CASCADE
+    settings_calculation = models.ForeignKey(
+        SettingsCalculation, on_delete=models.CASCADE, related_name='sensitivity_analysis'
     )
-    fault_calculation_protocol = models.ForeignKey(
-        FaultCalculationProtocol, on_delete=models.CASCADE
+    fault_calculation = models.ForeignKey(
+        FaultCalculation, on_delete=models.CASCADE, related_name='sensitivity_analysis'
     )
     sensitivity_rate = models.FloatField(verbose_name="Коэффициент чувствительности")
 
