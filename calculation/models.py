@@ -2,40 +2,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from core.models import Component, ProtectionHalfSet, Line
-
-
-class Fault(models.Model):
-    """Модель видов КЗ."""
-
-    fault_type = models.CharField(verbose_name='Вид КЗ', max_length=255, unique=True)
-    fault_type_designation = models.CharField(verbose_name='Обозначение', max_length=255, unique=True)
-
-    class Meta:
-        """Мета-данные модели FaultType."""
-
-        verbose_name = 'Вид КЗ'
-        verbose_name_plural = 'Виды КЗ'
-
-    def __str__(self):
-        """
-        :return: Обозначение вида КЗ.
-        """
-
-        return self.fault_type_designation
-
-
-class FaultProtection(models.Model):
-    """Промежуточная модель для связи FaultType и Component."""
-
-    component = models.ForeignKey(Component, on_delete=models.CASCADE)
-    fault = models.ForeignKey(Fault, on_delete=models.CASCADE)
-
-    class Meta:
-        """Мета-данные модели FaultProtection."""
-
-        verbose_name = 'Назначение органов ДФЗ'
-        verbose_name_plural = 'Назначение органов ДФЗ'
+from core.models import Component, Line, ProtectionHalfSet
 
 
 class CalculationMeta(models.Model):
@@ -88,7 +55,7 @@ class FaultCalculation(models.Model):
     protection_half_set = models.ForeignKey(
         ProtectionHalfSet, on_delete=models.CASCADE, related_name="fault_calculations"
     )
-    fault_type = models.ForeignKey(Fault, on_delete=models.CASCADE, related_name='fault_calculations')
+    fault_type = models.CharField(verbose_name="Вид КЗ", max_length=255)
     fault_location = models.CharField(verbose_name="Узел КЗ", max_length=255)
     network_topology = models.CharField(verbose_name="Схема сети", max_length=255)
     fault_values = models.JSONField()

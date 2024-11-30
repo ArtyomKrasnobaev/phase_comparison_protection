@@ -1,7 +1,8 @@
 from django.shortcuts import render
 
 from calculation.models import CalculationMeta
-from calculation.services.sensitivity_analysis_service import SensitivityAnalysisService
+from calculation.services.sensitivity_analysis_service import \
+    SensitivityAnalysisService
 
 
 def calculation(request):

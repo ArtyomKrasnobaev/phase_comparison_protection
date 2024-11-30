@@ -5,12 +5,11 @@ from calculation.models import CalculationMeta, SettingsCalculation
 from core.models import Component, Line, ProtectionHalfSet
 
 
-class CalculationService:
+class SettingsCalculationService:
 
     def __init__(
         self,
         calculation_meta: CalculationMeta,
-        line: Line,
         il_grading_factor=1.3,
         il_reset_factor=0.9,
         il_matching_factor=1.4,
@@ -43,8 +42,8 @@ class CalculationService:
         self.calculation_meta = calculation_meta
 
         # Определяем линию и полукомплекты защиты
-        self.line = line
-        self.protection_half_sets = line.protection_half_sets.all()
+        self.line = calculation_meta.line
+        self.protection_half_sets = self.line.protection_half_sets.all()
 
         # Карта расчетных функций органов
         self.CALCULATION_MAP = {

@@ -61,28 +61,6 @@ class Substation(models.Model):
         return self.dispatch_name
 
 
-class ProtectionDevice(models.Model):
-    """Модель устройства РЗА с функцией ДФЗ."""
-
-    device_model = models.CharField(
-        verbose_name="Модель устройства", max_length=100, unique=True
-    )
-    manufacturer = models.CharField(verbose_name="Производитель", max_length=100)
-
-    class Meta:
-        """Мета-данные модели ProtectionDevice."""
-
-        verbose_name = "Устройство РЗА"
-        verbose_name_plural = "Устройства РЗА"
-
-    def __str__(self):
-        """
-        :return: Модель устройства РЗА
-        """
-
-        return self.device_model
-
-
 class Component(models.Model):
     """Модель органа защиты для реализации функции ДФЗ."""
 
@@ -107,25 +85,33 @@ class Component(models.Model):
         return self.setting_designation
 
 
-class DeviceEquipment(models.Model):
-    """Промежуточная модель для связи ProtectionDevice и Component."""
+class ProtectionDevice(models.Model):
+    """Модель устройства РЗА с функцией ДФЗ."""
 
-    protection_device = models.ForeignKey(
-        ProtectionDevice,
-        on_delete=models.CASCADE,
-        related_name="device_equipment"
+    device_model = models.CharField(
+        verbose_name="Модель устройства", max_length=100, unique=True
     )
-    component = models.ForeignKey(
+    manufacturer = models.CharField(
+        verbose_name="Производитель", max_length=100
+    )
+    components = models.ManyToManyField(
         Component,
-        on_delete=models.CASCADE,
-        related_name="device_equipment"
+        verbose_name="Органы ДФЗ",
+        related_name="protection_devices"
     )
 
     class Meta:
-        """Мета-данные модели DeviceEquipment."""
+        """Мета-данные модели ProtectionDevice."""
 
-        verbose_name = 'Орган ДФЗ устройства РЗА'
-        verbose_name_plural = 'Органы ДФЗ устройства РЗА'
+        verbose_name = "Устройство РЗА"
+        verbose_name_plural = "Устройства РЗА"
+
+    def __str__(self):
+        """
+        :return: Модель устройства РЗА
+        """
+
+        return self.device_model
 
 
 class ProtectionHalfSet(models.Model):

@@ -1,1 +1,1 @@
-from .calculation_service import CalculationService
+from .settings_calculation_service import SettingsCalculationService
