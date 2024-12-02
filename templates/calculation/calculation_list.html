@@ -1,0 +1,24 @@
+{% extends "main/layout.html" %}
+{% block title %}История{% endblock title %}
+{% block content %}
+    <body>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Номер расчета</th>
+            <th scope="col">Защищаемая ЛЭП</th>
+            <th scope="col">Дата расчета</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for calculation in calculations %}
+            <tr>
+                <td>{{ calculation.calculation_number}}</td>
+                <td>{{ calculation.line }}</td>
+                <td>{{ calculation.calculation_date }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </body>
+{% endblock content %}
