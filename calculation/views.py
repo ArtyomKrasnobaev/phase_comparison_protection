@@ -1,9 +1,9 @@
 from django.shortcuts import redirect, render
-from django.urls import reverse
 
 from core.models import ProtectionHalfSet
+
 from .forms import LineSelectionForm
-from .models import CalculationMeta
+from .models import CalculationMeta, SettingsCalculation
 from .services import SettingsCalculationService
 
 
@@ -36,7 +36,7 @@ def calculation(request):
                 )
                 service.run()
 
-                return redirect(reverse('calculation'))
+                return redirect('results', calculation_meta_id=calculation_meta.id)
 
             return render(
                 request,
@@ -57,6 +57,16 @@ def calculation(request):
         {'form': form}
     )
 
+def calculation_results(request, calculation_meta_id):
+    calculation_meta = CalculationMeta.objects.get(id=calculation_meta_id)
+    results = SettingsCalculation.objects.filter(
+        calculation_meta=calculation_meta
+    )
+    return render(
+        request,
+        'calculation/results.html',
+        {'results': results, 'calculation_meta': calculation_meta}
+    )
 
 def calculation_list(request):
     calculations = CalculationMeta.objects.all().order_by('-calculation_date')

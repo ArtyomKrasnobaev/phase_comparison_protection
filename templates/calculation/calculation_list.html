@@ -13,9 +13,13 @@
         <tbody>
         {% for calculation in calculations %}
             <tr>
-                <td>{{ calculation.calculation_number}}</td>
+                <td>{{ calculation.calculation_number }}</td>
                 <td>{{ calculation.line }}</td>
                 <td>{{ calculation.calculation_date }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">Расчеты отсутствуют.</td>
             </tr>
         {% endfor %}
         </tbody>
