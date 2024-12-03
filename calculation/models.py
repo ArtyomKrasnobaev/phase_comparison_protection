@@ -40,6 +40,7 @@ class SettingsCalculation(models.Model):
     component = models.ForeignKey(
         Component, on_delete=models.CASCADE, related_name='settings_calculations'
     )
+    calculation_factors = models.JSONField(blank=True, null=True)
     result_value = models.FloatField(verbose_name="Результат расчета")
 
     class Meta:

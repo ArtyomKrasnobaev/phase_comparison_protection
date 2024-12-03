@@ -60,15 +60,17 @@ class SettingsCalculationService:
             "DI2 ОТКЛ": self.calculate_i2_break,
             "U2 БЛОК": self.calculate_u2_block,
             "U2 ОТКЛ": self.calculate_u2_break,
+            'УГОЛ БЛОК': self.calculate_blocking_angle,
         }
 
+        # Коэффициент чувствительности токовых органов
         self.di1_sensitivity_rate = 2
 
     def save_result_to_db(
         self,
         protection_half_set: ProtectionHalfSet,
         component: Component,
-        result_value: float,
+        result_value: float
     ) -> None:
         SettingsCalculation.objects.create(
             calculation_meta=self.calculation_meta,
@@ -77,9 +79,22 @@ class SettingsCalculationService:
             result_value=result_value,
         )
 
-    def get_calculation_function(self, component: Component) -> Callable[[], float]:
-        calculation_function = self.CALCULATION_MAP.get(component.setting_designation)
+    def get_calculation_function(
+        self, component: Component
+    ) -> Callable[[], float]:
+        calculation_function = self.CALCULATION_MAP.get(
+            component.setting_designation
+        )
         return calculation_function
+
+    def calculate_blocking_angle(self) -> float:
+        if self.line.length < 60:
+            blocking_angle = 50
+        elif 60 <= self.line.length < 150:
+            blocking_angle = 60
+        else:
+            blocking_angle = 65
+        return blocking_angle
 
     def calculate_il_block(self) -> float:
         il_block_value = (
@@ -91,7 +106,9 @@ class SettingsCalculationService:
         return il_block_value
 
     def calculate_il_break(self) -> float:
-        il_break_value = round(self.il_matching_factor * self.calculate_il_block(), 2)
+        il_break_value = round(
+            self.il_matching_factor * self.calculate_il_block(), 2
+        )
         return il_break_value
 
     def calculate_di1_break(self) -> float:
@@ -114,9 +131,11 @@ class SettingsCalculationService:
         return di1_block_value
 
     def calculate_i2_block(self) -> float:
-        i2_imbalance_current = self.i2_imbalance_factor * self.line.current_capacity
+        i2_imbalance_current = (self.i2_imbalance_factor *
+                                self.line.current_capacity)
         i2_block_value = (
-            self.i2_grading_factor / self.i2_reset_factor * i2_imbalance_current
+            self.i2_grading_factor
+            / self.i2_reset_factor * i2_imbalance_current
         )
         return i2_block_value
 
