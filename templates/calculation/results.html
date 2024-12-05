@@ -10,6 +10,7 @@
         <tr>
             <th scope="col">Полукомплект</th>
             <th scope="col">Орган ДФЗ</th>
+            <th scope="col">Коэффициенты</th>
             <th scope="col">Значение уставки</th>
         </tr>
         </thead>
@@ -18,6 +19,15 @@
             <tr>
                 <td>{{ result.protection_half_set }}</td>
                 <td>{{ result.component }}</td>
+                <td>
+                    {% if result.calculation_factors %}
+                        {% for factor_type, factor_value in result.calculation_factors.items %}
+                            {{ factor_type }}: {{ factor_value }} <br/>
+                        {% endfor %}
+                    {% else %}
+                        <em>Нет коэффициентов</em>
+                    {% endif %}
+                </td>
                 <td>{{ result.result_value }}</td>
             </tr>
         {% endfor %}

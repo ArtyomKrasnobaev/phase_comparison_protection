@@ -1,93 +1,150 @@
-from calculation.models import *
+from math import sqrt
+from typing import Callable, Dict, List, Optional, Union
+
+from django.db.models import QuerySet
+
+from calculation.models import (CalculationMeta, FaultCalculation,
+                                SensitivityAnalysis, SettingsCalculation)
 from core.models import Component
 
 
 class SensitivityAnalysisService:
     """Сервис анализа чувствительности."""
 
-    def __init__(
-            self,
-            calculation_meta: CalculationMeta
-    ) -> None:
-
-        self.calculation_meta = calculation_meta
-        self.settings_calculation_protocols = (
+    def __init__(self, calculation_meta: CalculationMeta) -> None:
+        self.calculation_meta: CalculationMeta = calculation_meta
+        self.settings_calculations: QuerySet[SettingsCalculation] = (
             SettingsCalculation.objects.filter(
                 calculation_meta=self.calculation_meta
             )
         )
 
-        # Маппинг органов и видов КЗ
-        self.FAULT_TYPE_MAP = {
-            'IЛ ОТКЛ': ['Трехфазное КЗ'],
-            'I2 ОТКЛ': ['Двухфазное КЗ', 'Двухфазное КЗ на землю', 'Однофазное КЗ'],
-            'DI2 ОТКЛ': ['Двухфазное КЗ', 'Двухфазное КЗ на землю', 'Однофазное КЗ']
+        self.SENSITIVITY_HANDLERS: Dict[
+            str, # Ключ - обозначение параметра настройки органа
+            Dict[
+                str,
+                Union[
+                    Callable[[float, float], float], # Расчетная функция
+                    List[str], # Список видов КЗ
+                    str # Целевая величина
+                ]
+            ]
+        ] = {
+            "IЛ ОТКЛ": {
+                'function': self._calculate_phase_current_diff_sensitivity,
+                'fault_types': ['К(3)'],
+                'fault_value': 'I1'
+            },
+            'I2 ОТКЛ': {
+                'function': self._calculate_current_sensitivity,
+                'fault_types': ['К(2)', 'К(1,1)', 'К(1)'],
+                'fault_value': 'I2'
+            },
+            'DI1 ОТКЛ': {
+                'function': self._calculate_current_sensitivity,
+                'fault_types': ['К(3)'],
+                'fault_value': 'I1'
+            },
+            'DI2 ОТКЛ': {
+                'function': self._calculate_current_sensitivity,
+                'fault_types': ['К(2)', 'К(1,1)', 'К(1)'],
+                'fault_value': 'I2'
+            },
         }
 
+    def run(self) -> None:
+        for settings_calculation in self.settings_calculations:
+            component = settings_calculation.component
+            protection_half_set = settings_calculation.protection_half_set
+            result_value = settings_calculation.result_value
+            handler = self._get_handler(component)
+
+            if handler:
+                sensitivity_analysis_function = handler['function']
+                fault_types = handler['fault_types']
+                target_fault_value = handler['fault_value']
+                fault_calculations: QuerySet[FaultCalculation] = (
+                    FaultCalculation.objects.filter(
+                        protection_half_set=protection_half_set,
+                        fault_type__in=fault_types
+                    )
+                )
+
+                for fault_calculation in fault_calculations:
+                    fault_value = fault_calculation.fault_values.get(
+                        target_fault_value
+                    )
+                    sensitivity_rate = sensitivity_analysis_function(
+                        result_value, fault_value
+                    )
+                    sensitivity_rate = round(sensitivity_rate, 2)
+
+                    self._save_result_to_db(
+                        settings_calculation=settings_calculation,
+                        fault_calculation=fault_calculation,
+                        sensitivity_rate=sensitivity_rate
+                    )
+            else:
+                print(f'Отсутствует расчетный модуль проверки чувствительности органа {component}')
+
+    def _get_handler(
+        self, component: Component
+    ) -> Optional[
+        Dict[str, Union[Callable[[float, float], float], List[str], str]]
+    ]:
+        """
+        Метод получения данных для анализа чувствительности.
+
+        :param component: Объект класса Component.
+        :return: Словарь с данными для анализа чувствительности.
+        """
+        handler = self.SENSITIVITY_HANDLERS.get(
+            component.setting_designation
+        )
+        return handler
+
     @staticmethod
-    def save_result_to_db(
-            settings_calculation_protocol: SettingsCalculation,
-            fault_calculation_protocol: FaultCalculation,
-            sensitivity_rate: float
+    def _save_result_to_db(
+        settings_calculation: SettingsCalculation,
+        fault_calculation: FaultCalculation,
+        sensitivity_rate: float
     ) -> None:
+        """
+        Метод сохранения результатов анализа чувствительности в базу данных.
+
+        :param settings_calculation: Объект класса SettingsCalculation.
+        :param fault_calculation: Объект класса FaultCalculation.
+        :param sensitivity_rate: Коэффициент чувствительности.
+        """
 
         SensitivityAnalysis.objects.create(
-            settings_calculation_protocol=settings_calculation_protocol,
-            fault_calculation_protocol=fault_calculation_protocol,
+            settings_calculation=settings_calculation,
+            fault_calculation=fault_calculation,
             sensitivity_rate=sensitivity_rate
         )
 
-    def get_fault_types(self, component: Component):
-        fault_type = self.FAULT_TYPE_MAP.get(component.setting_designation)
-        return fault_type
-
     @staticmethod
-    def calculate_sensitivity(
-            fault_protocol: FaultCalculation,
-            component: Component,
-            result_value: float
+    def _calculate_phase_current_diff_sensitivity(
+        result_value: float, fault_value: float
     ) -> float:
-        fault_current_map = {
-            'IЛ ОТКЛ': fault_protocol.positive_sequence_current,
-            'I2 ОТКЛ': fault_protocol.negative_sequence_current,
-            'DI2 ОТКЛ': fault_protocol.negative_sequence_current
-        }
-        fault_current = fault_current_map.get(component.setting_designation)
-        sensitivity_rate = fault_current / result_value
+        """
+        :param result_value: Величина уставки.
+        :param fault_value: Величина тока КЗ.
+        :return: Коэффициент чувствительности.
+        """
+
+        sensitivity_rate = sqrt(3) * fault_value / result_value
         return sensitivity_rate
 
-    def run(self):
-        print("Выполняется анализ чувствительности...")
+    @staticmethod
+    def _calculate_current_sensitivity(
+        result_value: float, fault_value: float
+    ) -> float:
+        """
+        :param result_value: Величина уставки.
+        :param fault_value: Величина тока КЗ.
+        :return: Коэффициент чувствительности.
+        """
 
-        for setting_calculation_protocol in self.settings_calculation_protocols:
-            print(f"Обработка протокола {setting_calculation_protocol}.")
-            component = setting_calculation_protocol.component
-            fault_types = self.get_fault_types(component)
-
-            if fault_types:
-                print(f"\tОрган: {component.setting_designation}, Виды КЗ: {fault_types}")
-
-                for fault_type in fault_types:
-                    fault_protocols = FaultCalculation.objects.filter(
-                        fault_type=fault_type,
-                        protection_half_set=setting_calculation_protocol.protection_half_set
-                    )
-                    print(f"\t{fault_type}, найдено {fault_protocols.count()} протоколов расчета КЗ")
-
-                    for fault_protocol in fault_protocols:
-                        sensitivity_rate = self.calculate_sensitivity(
-                            fault_protocol=fault_protocol,
-                            component=component,
-                            result_value=setting_calculation_protocol.result_value
-                        )
-                        print(f"\tКоэффициент чувствительности: {sensitivity_rate:.2f}")
-
-                        self.save_result_to_db(
-                            settings_calculation_protocol=setting_calculation_protocol,
-                            fault_calculation_protocol=fault_protocol,
-                            sensitivity_rate=round(sensitivity_rate, 2)
-                        )
-            else:
-                print(f'\tДля органа {component} не найдены расчетные виды КЗ.')
-
-        print("Анализ чувствительности завершен.")
+        sensitivity_rate = fault_value / result_value
+        return sensitivity_rate

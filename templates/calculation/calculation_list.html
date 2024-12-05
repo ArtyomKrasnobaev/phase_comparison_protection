@@ -12,7 +12,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for calculation in calculations %}
+        {% for calculation in page_obj.object_list %}
             <tr>
                 <td>{{ calculation.calculation_number }}</td>
                 <td>{{ calculation.line }}</td>
@@ -28,5 +28,25 @@
         {% endfor %}
         </tbody>
     </table>
+    
+    <nav aria-label="Навигация">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                </li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
     </body>
 {% endblock content %}

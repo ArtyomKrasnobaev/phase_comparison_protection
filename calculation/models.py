@@ -8,11 +8,19 @@ from core.models import Component, Line, ProtectionHalfSet
 class CalculationMeta(models.Model):
     """Модель мета-данных расчета."""
 
-    line = models.ForeignKey(Line, on_delete=models.CASCADE, related_name='calculations', null=True, blank=True)
+    line = models.ForeignKey(
+        Line,
+        on_delete=models.CASCADE,
+        related_name="calculations",
+        null=True,
+        blank=True,
+    )
     calculation_number = models.PositiveIntegerField(
         verbose_name="Номер расчета", null=True, blank=True
     )
-    calculation_date = models.DateTimeField(verbose_name="Дата расчета", auto_now_add=True)
+    calculation_date = models.DateTimeField(
+        verbose_name="Дата расчета", auto_now_add=True
+    )
 
     class Meta:
         """Мета-данные модели CalculationMeta."""
@@ -25,20 +33,22 @@ class CalculationMeta(models.Model):
         :return: Номер расчета.
         """
 
-        return f'Расчет параметров настройки ДФЗ {self.line} от {self.calculation_date}'
+        return f"Расчет параметров настройки ДФЗ {self.line} от {self.calculation_date}"
 
 
 class SettingsCalculation(models.Model):
     """Модель протокола расчета параметра настройки органа."""
 
     calculation_meta = models.ForeignKey(
-        CalculationMeta, on_delete=models.CASCADE, related_name='settings_calculations'
+        CalculationMeta, on_delete=models.CASCADE, related_name="settings_calculations"
     )
     protection_half_set = models.ForeignKey(
-        ProtectionHalfSet, on_delete=models.CASCADE, related_name='settings_calculations'
+        ProtectionHalfSet,
+        on_delete=models.CASCADE,
+        related_name="settings_calculations",
     )
     component = models.ForeignKey(
-        Component, on_delete=models.CASCADE, related_name='settings_calculations'
+        Component, on_delete=models.CASCADE, related_name="settings_calculations"
     )
     calculation_factors = models.JSONField(blank=True, null=True)
     result_value = models.FloatField(verbose_name="Результат расчета")
@@ -72,10 +82,12 @@ class SensitivityAnalysis(models.Model):
     """Модель анализа чувствительности."""
 
     settings_calculation = models.ForeignKey(
-        SettingsCalculation, on_delete=models.CASCADE, related_name='sensitivity_analysis'
+        SettingsCalculation,
+        on_delete=models.CASCADE,
+        related_name="sensitivity_analysis",
     )
     fault_calculation = models.ForeignKey(
-        FaultCalculation, on_delete=models.CASCADE, related_name='sensitivity_analysis'
+        FaultCalculation, on_delete=models.CASCADE, related_name="sensitivity_analysis"
     )
     sensitivity_rate = models.FloatField(verbose_name="Коэффициент чувствительности")
 
