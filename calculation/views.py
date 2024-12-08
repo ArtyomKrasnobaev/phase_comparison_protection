@@ -4,8 +4,9 @@ from django.shortcuts import redirect, render
 from core.models import ProtectionHalfSet
 
 from .forms import LineSelectionForm
-from .models import CalculationMeta, SettingsCalculation
+from .models import CalculationMeta, SettingsCalculation, SensitivityAnalysis
 from .services import SettingsCalculationService
+from .services import SensitivityAnalysisService
 
 
 def calculation(request):
@@ -30,12 +31,21 @@ def calculation(request):
 
             if "run_calculation" in request.POST:
                 calculation_meta = CalculationMeta.objects.create(
-                    line=selected_line,
+                    line=selected_line
                 )
-                service = SettingsCalculationService(calculation_meta=calculation_meta)
-                service.run()
+                settings_calculation_service = SettingsCalculationService(
+                    calculation_meta=calculation_meta,
+                    calculation_factors={}
+                )
+                settings_calculation_service.run()
+                sensitivity_analysis_service = SensitivityAnalysisService(
+                    calculation_meta=calculation_meta
+                )
+                sensitivity_analysis_service.run()
 
-                return redirect("results", calculation_meta_id=calculation_meta.id)
+                return redirect(
+                    "results", calculation_meta_id=calculation_meta.id
+                )
 
             return render(
                 request,
@@ -50,7 +60,11 @@ def calculation(request):
     else:
         form = LineSelectionForm()
 
-    return render(request, "calculation/calculation.html", {"form": form})
+    return render(
+        request,
+        "calculation/calculation.html",
+        {"form": form}
+    )
 
 
 def calculation_results(request, calculation_meta_id):
@@ -65,9 +79,28 @@ def calculation_results(request, calculation_meta_id):
     )
 
 
+def sensitivity_analysis(request, calculation_meta_id):
+    calculation_meta = CalculationMeta.objects.get(id=calculation_meta_id)
+    sens_analysis = SensitivityAnalysis.objects.filter(
+        settings_calculation__calculation_meta=calculation_meta
+    )
+    return render(
+        request,
+        'calculation/sensitivity_analysis.html',
+        {
+            "sens_analysis": sens_analysis,
+            'calculation_meta': calculation_meta
+        }
+    )
+
+
 def calculation_list(request):
     calculations = CalculationMeta.objects.all().order_by("-calculation_date")
     paginator = Paginator(calculations, 13)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-    return render(request, "calculation/calculation_list.html", {"page_obj": page_obj})
+    return render(
+        request,
+        "calculation/calculation_list.html",
+        {"page_obj": page_obj}
+    )

@@ -7,41 +7,27 @@ from core.models import Component, ProtectionHalfSet
 
 
 class SettingsCalculationService:
-
     def __init__(
         self,
         calculation_meta: CalculationMeta,
-        manipulation_grading_factor=1.5,
-        il_grading_factor=1.3,
-        il_reset_factor=0.9,
-        il_matching_factor=1.4,
-        i2_imbalance_factor=0.05,
-        i2_grading_factor=1.3,
-        i2_reset_factor=0.9,
-        i2_matching_factor=1.4,
-        di1_matching_factor=1.4,
-        u2_grading_factor=1.3,
-        u2_reset_factor=0.9,
-        u2_imbalance_voltage=1.5,
-        voltage_transformer_factor=5000,
-        u2_matching_factor=2.0,
-    ) -> None:
+        calculation_factors: Dict[str, float]
+    ):
 
         # Определяем коэффициенты для всех органов
-        self.manipulation_grading_factor = manipulation_grading_factor
-        self.il_grading_factor = il_grading_factor
-        self.il_reset_factor = il_reset_factor
-        self.il_matching_factor = il_matching_factor
-        self.i2_imbalance_factor = i2_imbalance_factor
-        self.i2_grading_factor = i2_grading_factor
-        self.i2_reset_factor = i2_reset_factor
-        self.i2_matching_factor = i2_matching_factor
-        self.di1_matching_factor = di1_matching_factor
-        self.u2_grading_factor = u2_grading_factor
-        self.u2_reset_factor = u2_reset_factor
-        self.u2_matching_factor = u2_matching_factor
-        self.u2_imbalance_voltage = u2_imbalance_voltage
-        self.voltage_transformer_factor = voltage_transformer_factor
+        self.manipulation_grading_factor = calculation_factors.get('manipulation_grading_factor', 1.5)
+        self.il_grading_factor = calculation_factors.get('il_grading_factor', 1.3)
+        self.il_reset_factor = calculation_factors.get('il_reset_factor', 0.9)
+        self.il_matching_factor = calculation_factors.get('il_matching_factor', 1.4)
+        self.i2_imbalance_factor = calculation_factors.get('i2_imbalance_factor', 0.05)
+        self.i2_grading_factor = calculation_factors.get('i2_grading_factor', 1.3)
+        self.i2_reset_factor = calculation_factors.get('i2_reset_factor', 0.9)
+        self.i2_matching_factor = calculation_factors.get('i2_matching_factor', 1.4)
+        self.di1_matching_factor = calculation_factors.get('di1_matching_factor', 1.4)
+        self.u2_grading_factor = calculation_factors.get('u2_grading_factor', 1.3)
+        self.u2_reset_factor = calculation_factors.get('u2_reset_factor', 0.9)
+        self.u2_matching_factor = calculation_factors.get('u2_matching_factor', 2.0)
+        self.u2_imbalance_voltage = calculation_factors.get('u2_imbalance_voltage', 1.5)
+        self.voltage_transformer_factor = calculation_factors.get('voltage_transformer_factor', 5000)
 
         # Определяем мета-данные расчета
         self.calculation_meta = calculation_meta

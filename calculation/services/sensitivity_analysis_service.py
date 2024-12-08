@@ -20,14 +20,9 @@ class SensitivityAnalysisService:
         )
 
         self.SENSITIVITY_HANDLERS: Dict[
-            str, # Ключ - обозначение параметра настройки органа
+            str,
             Dict[
-                str,
-                Union[
-                    Callable[[float, float], float], # Расчетная функция
-                    List[str], # Список видов КЗ
-                    str # Целевая величина
-                ]
+                str, Union[Callable[[float, float], float], List[str], str]
             ]
         ] = {
             "IЛ ОТКЛ": {
@@ -50,6 +45,11 @@ class SensitivityAnalysisService:
                 'fault_types': ['К(2)', 'К(1,1)', 'К(1)'],
                 'fault_value': 'I2'
             },
+            'U2 ОТКЛ': {
+                'function': self._calculate_current_sensitivity,
+                'fault_types': ['К(2)', 'К(1,1)', 'К(1)'],
+                'fault_value': 'U2'
+            }
         }
 
     def run(self) -> None:
@@ -78,14 +78,11 @@ class SensitivityAnalysisService:
                         result_value, fault_value
                     )
                     sensitivity_rate = round(sensitivity_rate, 2)
-
                     self._save_result_to_db(
                         settings_calculation=settings_calculation,
                         fault_calculation=fault_calculation,
                         sensitivity_rate=sensitivity_rate
                     )
-            else:
-                print(f'Отсутствует расчетный модуль проверки чувствительности органа {component}')
 
     def _get_handler(
         self, component: Component
@@ -115,6 +112,7 @@ class SensitivityAnalysisService:
         :param settings_calculation: Объект класса SettingsCalculation.
         :param fault_calculation: Объект класса FaultCalculation.
         :param sensitivity_rate: Коэффициент чувствительности.
+        :return: None.
         """
 
         SensitivityAnalysis.objects.create(

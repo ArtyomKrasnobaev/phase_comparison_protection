@@ -21,7 +21,6 @@
         {% endfor %}
         <p><strong>Модель устройства РЗА: </strong>{{ protection_half_sets.0.protection_device }}</p>
         <p><strong>Производитель: </strong>{{ protection_half_sets.0.protection_device.manufacturer }}</p>
-        
         <form method="post">
             {% csrf_token %}
             <input type="hidden" name="line" value="{{ selected_line.id }}">

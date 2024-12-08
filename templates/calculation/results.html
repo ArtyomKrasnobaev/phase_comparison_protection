@@ -4,6 +4,7 @@
     <h4>Результаты расчета</h4>
     <p><strong>Защищаемая ЛЭП:</strong> {{ calculation_meta.line }}</p>
     <p><strong>Дата расчета:</strong> {{ calculation_meta.calculation_date }}</p>
+    <a href="{% url 'sensitivity_analysis' calculation_meta.id %}">Анализ чувствительности</a>
     <body>
     <table class="table table-hover">
         <thead>
